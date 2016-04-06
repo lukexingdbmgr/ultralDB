@@ -164,11 +164,12 @@ int main(int argc, char *argv[])
 		l = sendto(s, MAGIC_WORD, sizeof(MAGIC_WORD), 0, (struct sockaddr *)&from, fromlen);
 		if (l < 0) PERROR("sendto");
 	} else {
+		printf("client \n\n");
 		from.sin_family = AF_INET;
 		from.sin_port = htons(port);
 		inet_aton(ip, &from.sin_addr);
 		l =sendto(s, MAGIC_WORD, sizeof(MAGIC_WORD), 0, (struct sockaddr *)&from, sizeof(from));
-		if (l < 0) PERROR("sendto");
+		if (l < 0) printf("sendto\n");
 		l = recvfrom(s,buf, sizeof(buf), 0, (struct sockaddr *)&from, &fromlen);
 		if (l < 0) PERROR("recvfrom");
 		if (strncmp(MAGIC_WORD, buf, sizeof(MAGIC_WORD) != 0))
@@ -176,18 +177,22 @@ int main(int argc, char *argv[])
 	}
 	printf("Connection with %s:%i established\n", 
 	       inet_ntoa(from.sin_addr.s_addr), ntohs(from.sin_port));
+	int max_fd = fd > s ? fd:s;
 	while (1) {
 		FD_ZERO(&fdset);
 		FD_SET(fd, &fdset);
 		FD_SET(s, &fdset);
-		if (select(fd+s+1, &fdset,NULL,NULL,NULL) < 0) PERROR("select");
+		if (select(max_fd + 1, &fdset,NULL,NULL,NULL) < 0) printf("select");
 		if (FD_ISSET(fd, &fdset)) {
+                        printf("tun is alive\n");
 			if (DEBUG) write(1,">", 1);
 			l = read(fd, buf, sizeof(buf));
+			printf("read %d from tap\n");
 			if (l < 0) PERROR("read");
-			if (sendto(s, buf, l, 0, (struct sockaddr *)&from, fromlen) < 0) PERROR("sendto");
+			if (sendto(s, buf, l, 0, (struct sockaddr *)&from, fromlen) < 0) printf("sendto");
 		} else {
 			if (DEBUG) write(1,"<", 1);
+			printf("net_fd is alive\n");
 			l = recvfrom(s, buf, sizeof(buf), 0, (struct sockaddr *)&sout, &soutlen);
 			if ((sout.sin_addr.s_addr != from.sin_addr.s_addr) || (sout.sin_port != from.sin_port))
 				printf("Got packet from  %s:%i instead of %s:%i\n", 
