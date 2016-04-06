@@ -130,11 +130,11 @@ int main(int argc, char *argv[])
 		}
 	}
 	if (MODE == 0) usage();
-	char tun[100] = {0}; 
-	if (fd = tun_alloc(tun, IFF_TUN | IFF_NO_PI) < 0){
-		printf("tun alloc fail = fd");	
-	}
-/*
+//	char tun[100] = {0}; 
+//	if (fd = tun_alloc(tun, IFF_TUN | IFF_NO_PI) < 0){
+//		printf("tun alloc fail = fd");	
+//	}
+
 	if ( (fd = open("/dev/net/tun",O_RDWR)) < 0) PERROR("open");
 
 	memset(&ifr, 0, sizeof(ifr));
@@ -143,7 +143,7 @@ int main(int argc, char *argv[])
 	if (ioctl(fd, TUNSETIFF, (void *)&ifr) < 0) PERROR("ioctl");
 
 	printf("Allocated interface %s. Configure and use it\n", ifr.ifr_name);
-*/	
+	
 	s = socket(PF_INET, SOCK_DGRAM, 0);
 	sin.sin_family = AF_INET;
 	sin.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -187,7 +187,7 @@ int main(int argc, char *argv[])
                         printf("tun is alive\n");
 			if (DEBUG) write(1,">", 1);
 			l = read(fd, buf, sizeof(buf));
-			printf("read %d from tap\n");
+			printf("read %d from tap\n",l);
 			if (l < 0) PERROR("read");
 			if (sendto(s, buf, l, 0, (struct sockaddr *)&from, fromlen) < 0) printf("sendto");
 		} else {
